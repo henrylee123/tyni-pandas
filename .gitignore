@@ -1,0 +1,8 @@
+.idea
+.vscode
+/pkg/
+/bin/
+.env
+test.sh
+__debug_bin
+.DS_Store

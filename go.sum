@@ -1,0 +1,6 @@
+github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
+github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
+github.com/noaway/dateparse v0.0.0-20171117034806-ad2b19d7b298 h1:KxSjks3AZ9UzCE5zvzWz1bwsH2N4ibSHhoOpKkhji7s=
+github.com/noaway/dateparse v0.0.0-20171117034806-ad2b19d7b298/go.mod h1:igayvLRJcte85zNxjysR9x255KAJmDUAMEiG3P6z0IY=
+github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
+github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
