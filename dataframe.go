@@ -86,6 +86,11 @@ const (
 )
 
 func (d *DataFrame) UniqueMerge(d2 *DataFrame, col string, mergeType string) {
+	// check len
+	if (len(d.ColNames) == 0) || (len(d2.ColNames) == 0) || d.V[0].L == 0 || d2.V[0].L == 0 {
+		return
+	}
+
 	// check col unique
 	if !d.CheckDistinctCol(col) || !d2.CheckDistinctCol(col) {
 		panic(ErrColDulipcatedValue(""))
@@ -169,18 +174,36 @@ func (d *DataFrame) UniqueMerge(d2 *DataFrame, col string, mergeType string) {
 		}
 	}
 
-	for _, colname := range d2.ColNames {
-		[colname]
-	}
-
 	// 3. merge
 	switch mergeType {
 	case MergeTypeLeft:
-		it := valMap.Iterator()
-		for it.Next() {
-			k := it.Key()
-			v := it.Value()
+		for _, colname := range d2.ColNames {
+			series := d2.GetCol(colname)
+			switch series.DType {
+			case Float64, Int64, Time:
+				var ns = make([]N, 0, d.V[0].L)
 
+				it := valMap.Iterator()
+				for idx := 0; it.Next() && (idx < int(d.V[0].L)); idx++ {
+					status := it.Value().(Status)
+					var n N
+					switch status.Code {
+					case InDf1:
+						// add zero
+						n = N{T: Normal, V: decimal.Zero}
+					case InDf1_Df2:
+						// add
+						n = series.Nums[status.Df2idx]
+						ns = append(ns, n)
+					}
+
+					if newName, ok := renames[series.Name]; ok {
+						d.AddCol(newName, &Series{DType: series.DType, Name: newName, Nums: ns, L: float64(len(ns))})
+					} else {
+						d.AddCol(series.Name, &Series{DType: series.DType, Name: series.Name, Nums: ns, L: float64(len(ns))})
+					}
+				}
+			}
 		}
 
 	case MergeTypeInner:

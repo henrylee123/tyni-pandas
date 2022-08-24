@@ -1,4 +1,4 @@
-module tyni-pandas
+module tynipandas
 
 go 1.17
 
