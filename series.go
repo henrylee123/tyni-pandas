@@ -37,6 +37,11 @@ type N struct {
 	V decimal.Decimal
 }
 
+func (n *N) SetZero() {
+	n.T = NumStatus(0)
+	n.V = decimal.Zero
+}
+
 // ******** num 2 num op ********
 func (s *Series) Add(v interface{}) {
 	if vf, ok := v.(float64); ok {
@@ -82,11 +87,23 @@ func (s *Series) Div(v interface{}) {
 // TODO Add more function
 
 // ******** num 2 str op ********
-func (s *Series) Format(f func(n decimal.Decimal) string) {
+func (s *Series) Format(f func(n decimal.Decimal) string, inplace bool) []string {
 	var sl = make([]string, 0, int(s.L))
-	for i := 0; i < int(s.L); i++ {
-		sl = append(sl, f(s.Nums[i].V))
+
+	if f != nil {
+		for i := 0; i < int(s.L); i++ {
+			sl = append(sl, f(s.Nums[i].V))
+		}
+	} else {
+		for i := 0; i < int(s.L); i++ {
+			sl = append(sl, s.Nums[i].V.String())
+		}
 	}
+
+	if inplace {
+		s.S = sl
+	}
+	return sl
 }
 
 // ******** str 2 num op ********

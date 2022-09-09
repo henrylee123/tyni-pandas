@@ -129,47 +129,33 @@ func (d *DataFrame) UniqueMerge(d2 *DataFrame, col string, mergeType string) {
 
 	var valMap = linkedhashmap.New() // orderMap
 
+	var s1, s2 []string
 	switch series.DType {
 	case Float64, Int64, Time:
-		for _, n := range series.Nums {
-			// col in d1
-			if _, found := valMap.Get(n.V.String()); !found {
-				valMap.Put(n.V.String(), Status{Code: InDf1})
-			}
-		}
-		for idx, n := range series2.Nums {
-			if statusInf, exist := valMap.Get(n.V.String()); !exist {
-				// col in d2
-				valMap.Put(n.V.String(), Status{Code: InDf2})
-			} else {
-				status := statusInf.(Status)
-				if status.Code == InDf1 {
-					// col both in d1 & d2
-					status.Code = InDf1_Df2
-					status.Df2idx = idx
-					valMap.Put(n.V.String(), status)
-				}
-			}
-		}
+		s1 = series.Format(nil, false)
+		s2 = series2.Format(nil, false)
 	case String:
-		for _, s := range series.S {
-			// col in d1
-			if _, exist := valMap.Get(s); !exist {
-				valMap.Put(s, Status{Code: InDf1})
-			}
+		s1 = series.S
+		s2 = series2.S
+	}
+
+	for _, s := range s1 {
+		// col in d1
+		if _, exist := valMap.Get(s); !exist {
+			valMap.Put(s, Status{Code: InDf1})
 		}
-		for idx, s := range series2.S {
-			if statusInf, exist := valMap.Get(s); !exist {
-				// col in d2
-				valMap.Put(s, Status{Code: InDf2})
-			} else {
-				status := statusInf.(Status)
-				if status.Code == InDf1 {
-					// col both in d1 & d2
-					status.Code = InDf1_Df2
-					status.Df2idx = idx
-					valMap.Put(s, status)
-				}
+	}
+	for idx, s := range s2 {
+		if statusInf, exist := valMap.Get(s); !exist {
+			// col in d2
+			valMap.Put(s, Status{Code: InDf2})
+		} else {
+			status := statusInf.(Status)
+			if status.Code == InDf1 {
+				// col both in d1 & d2
+				status.Code = InDf1_Df2
+				status.Df2idx = idx
+				valMap.Put(s, status)
 			}
 		}
 	}
@@ -184,18 +170,21 @@ func (d *DataFrame) UniqueMerge(d2 *DataFrame, col string, mergeType string) {
 				var ns = make([]N, 0, d.V[0].L)
 
 				it := valMap.Iterator()
+				var n N
 				for idx := 0; it.Next() && (idx < int(d.V[0].L)); idx++ {
 					status := it.Value().(Status)
-					var n N
 					switch status.Code {
 					case InDf1:
-						// add zero
-						n = N{T: Normal, V: decimal.Zero}
+						// set zero
+						n.T = Normal
+						n.V = decimal.Zero
 					case InDf1_Df2:
 						// add
 						n = series.Nums[status.Df2idx]
 						ns = append(ns, n)
 					}
+
+					n.SetZero()
 
 					if newName, ok := renames[series.Name]; ok {
 						d.AddCol(newName, &Series{DType: series.DType, Name: newName, Nums: ns, L: float64(len(ns))})
@@ -203,6 +192,8 @@ func (d *DataFrame) UniqueMerge(d2 *DataFrame, col string, mergeType string) {
 						d.AddCol(series.Name, &Series{DType: series.DType, Name: series.Name, Nums: ns, L: float64(len(ns))})
 					}
 				}
+			case String:
+
 			}
 		}
 
